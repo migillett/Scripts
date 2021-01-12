@@ -1,7 +1,6 @@
 #!/usr/bin/env /usr/bin/python
 
 '''
-
 This script is a simple tool to automate getting and setting of KUMO cross points via python
 On get success, the script returns the source 
 On set success, the script returns the source and destination separated by a comma
@@ -10,12 +9,12 @@ On failure, the script returns an error code
 -2: destination out of range (not enough destinations in router)
 -3: source is out of range (not enough sources in router)
 Requires installation of Requests module, can be installed with 'pip install requests'
-
 '''
 
 import requests
 import argparse
 import json
+import sys
 
 parser = argparse.ArgumentParser(description='Set and Get AJA KUMO cross points.  On get success, the script returns the source.  On set success, the script returns the source and destination separated by a comma.  On failure, the script returns -1')
 parser.add_argument('-d','--get_xpt',dest='dest',metavar="CROSSPOINT",type=int,nargs=1,help="Get crosspoint source for destination")
@@ -24,25 +23,21 @@ parser.add_argument('-a','--address',dest='kumo',metavar="ADDRESS",type=str,narg
 parser.add_argument('-e','--print_error',dest='err',action='store_true',default=False,help="Print out all error codes and exit")
 args = parser.parse_args()
 
-def printError():
-	print "Error Codes:"
-	print ""
-	print "-1: can't connect to KUMO (check your URL or network)"
-	print "-2: destination out of range (not enough destinations in router)"
-	print "-3: source is out of range (not enough sources in router)"
-	print ""	
-	exit()
 
 if args.err is True:
-	printError()
+	sys.exit('''
+	Error Codes:
+	
+	-1: can't connect to KUMO (check your URL or network)
+	-2: destination out of range (not enough destinations in router)
+	-3: source is out of range (not enough sources in router)
+	''')
 
 if args.dest is None:
-	print "No destination defined, exiting."
-	exit()
+	sys.exit("No destination defined, exiting.")
 
 if args.kumo is None:
-	print "No router defined, exiting."
-	exit()
+	sys.exit("No router defined, exiting.")
 
 #set our kumo URL
 kumo = 'http://' + args.kumo[0] + '/options'
@@ -52,7 +47,7 @@ try:
 	r = requests.get(kumo + '?action=get&paramid=eParamID_NumberOfSources')
 except requests.ConnectionError:
 	print -1
-	exit()	
+	exit()
 j = json.loads(r.text)
 sc = j['value']
 
@@ -102,5 +97,3 @@ else:
 		print -2
 	else:
 		print j['value'] + ',' + str(args.dest[0])
-
-
