@@ -47,7 +47,7 @@ def get_kumo_io_count(address, command):
 
 def main(address='', source=0, destination=0):
 	# set our Kumo URL
-	kumo = 'http://' + address + '/options'
+	kumo = f'http://{address}/options'
 
 	source_count = get_kumo_io_count(kumo, '?action=get&paramid=eParamID_NumberOfSources')
 	destination_count = get_kumo_io_count(kumo, '?action=get&paramid=eParamID_NumberOfDestinations')
