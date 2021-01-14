@@ -53,7 +53,6 @@ def kumo_config_main(address='', source=0, destination=0):
 	destination_count = get_kumo_io_count(kumo, '?action=get&paramid=eParamID_NumberOfDestinations')
 
 	print(f'\nConnected to Kumo Router: {address}')
-	print(f'SOURCES: {source_count} | DESTINATIONS: {destination_count}')
 
 	# if there isn't a source set on the cli, simply look up the source of the supplied destination
 	if not source:
