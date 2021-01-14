@@ -45,7 +45,7 @@ def get_kumo_io_count(address, command):
 		error(1)
 
 
-def main(address='', source=0, destination=0):
+def kumo_config_main(address='', source=0, destination=0):
 	# set our Kumo URL
 	kumo = f'http://{address}/options'
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 		src = False
 
 	# Run main program
-	main(
+	kumo_config_main(
 		address=host,
 		destination=dst,
 		source=src
