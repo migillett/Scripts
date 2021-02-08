@@ -1,37 +1,85 @@
-import time
+from time import sleep
 import schedule
-import sys
 from kumo import kumo_config_main
 
 # Change the show start and end times here. Use military time, so 1:00 pm = 13:00
-show_start = '12:00'
-show_end = '12:30'
+city_hall_in = '18:29:50'
+gc360_start = '15:59:50'
+gc360_end = '16:30:00'
 
-# Put the IP address of your KUMO router here
+# IP Address for the AJA KUMO Video Router
 kumo_addr = '192.168.1.2'
 
+# SOURCES
+tricaster = 7
+scala = 13
+city_hall = 14
+terrell = 15
+centennial = 16
 
-def start_show():
-    print('\nSTARTING SHOW')
-    
-    # Edit the sources and destinations as you see fit here. This is the start of the show.
-    # Add as many lines as you like if you have multiple switches at the same time.
-    kumo_config_main(address=kumo_addr, source=7, destination=12)
+# DESTINATIONS
+terrell_return = 1
+monitor_rack = 8
+bmd_record = 11
+master_out = 16
+
+intervals = (
+    ('weeks', 604800),  # 60 * 60 * 24 * 7
+    ('days', 86400),    # 60 * 60 * 24
+    ('hours', 3600),    # 60 * 60
+    ('minutes', 60),
+    ('seconds', 1),
+    )
 
 
-def end_show():
-    # Edit the sources and destinations here. This is at the end of the show.
-    # Add as many lines as you like if you have multiple switches at the same time.
-    kumo_config_main(address=kumo_addr, source=14, destination=12)
-    
-    sys.exit('Show complete. Exiting program.')
+def display_time(seconds, granularity=4):
+    result = []
+    for name, count in intervals:
+        value = seconds // count
+        if value:
+            seconds -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{} {}".format(value, name))
+    return ', '.join(result[:granularity])
 
 
-schedule.every().day.at(show_start).do(start_show)
-schedule.every().day.at(show_end).do(end_show)
+def test_switch():
+    kumo_config_main(address=kumo_addr, source=tricaster, destination=bmd_record)
+
+
+def switch_to_city_hall():
+    kumo_config_main(address=kumo_addr, source=city_hall, destination=monitor_rack)
+    kumo_config_main(address=kumo_addr, source=city_hall, destination=master_out)
+    print('\nbSwitching to City Hall Feed.')
+
+
+def switch_to_gc360():
+    kumo_config_main(address=kumo_addr, source=terrell, destination=master_out)
+    kumo_config_main(address=kumo_addr, source=terrell, destination=monitor_rack)
+    kumo_config_main(address=kumo_addr, source=terrell, destination=terrell_return)
+    print('\nSTARTING GC360')
+
+
+def default():
+    kumo_config_main(address=kumo_addr, source=scala, destination=monitor_rack)
+    kumo_config_main(address=kumo_addr, source=scala, destination=master_out)
+    kumo_config_main(address=kumo_addr, source=scala, destination=terrell_return)
+    print('\nRouter returned to default.')
+
+
+# schedule.every().tuesday.at(city_hall_in).do(switch_to_city_hall)
+schedule.every().thursday.at(gc360_start).do(switch_to_gc360)
+schedule.every().thursday.at(gc360_end).do(default)
 
 if __name__ == '__main__':
-    print('Show begins at:', show_start)
+    print('=======================\n  Program initialized.\n=======================\n')
     while True:
+        try:
+            t = schedule.idle_seconds()
+            print('Time until next switch command:', display_time(t))
+        except TypeError:
+            print('\nNo switch scheduled. Exiting.')
+            break
         schedule.run_pending()
-        time.sleep(1)
+        sleep(1)
