@@ -44,10 +44,6 @@ def display_time(seconds, granularity=4):
     return ', '.join(result[:granularity])
 
 
-def test_switch():
-    kumo_config_main(address=kumo_addr, source=tricaster, destination=bmd_record)
-
-
 def switch_to_city_hall():
     kumo_config_main(address=kumo_addr, source=city_hall, destination=monitor_rack)
     kumo_config_main(address=kumo_addr, source=city_hall, destination=master_out)
@@ -68,6 +64,7 @@ def default():
     print('\nRouter returned to default.')
 
 
+# Examples of switching commands:
 # schedule.every().tuesday.at(city_hall_in).do(switch_to_city_hall)
 schedule.every().thursday.at(gc360_start).do(switch_to_gc360)
 schedule.every().thursday.at(gc360_end).do(default)
